@@ -11,7 +11,34 @@ import (
 	"sync"
 )
 
+func (suh serviceUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	dec := json.NewDecoder(r.Body)
+	var p patch
+	err := dec.Decode(&p)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	fmt.Printf("Update received %+v\n", p)
+	prov.Update(p)
+}
+
 func RegisterService(r Registration) error {
+	heartbeatURL, err := url.Parse(r.HeartbeatURL)
+	if err != nil {
+		return err
+	}
+	http.HandleFunc(heartbeatURL.Path, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
 	serviceUpdateUrl, err := url.Parse(r.ServiceUpdateURL)
 	if err != nil {
 		return err
@@ -37,25 +64,6 @@ func RegisterService(r Registration) error {
 }
 
 type serviceUpdateHandler struct{}
-
-func (suh serviceUpdateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	dec := json.NewDecoder(r.Body)
-	var p patch
-	err := dec.Decode(&p)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	fmt.Printf("Update received %+v\n", p)
-	prov.Update(p)
-}
 
 func ShutdownService(serviceURL string) error {
 	req, err := http.NewRequest(http.MethodDelete, ServicesURL, bytes.NewBuffer([]byte(serviceURL)))

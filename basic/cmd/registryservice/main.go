@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
-	http.Handle("/services", &registry.RegistryService{})
+	registry.SetupRegistryService()
+
+	http.Handle("/services", &registry.Service{})
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

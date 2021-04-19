@@ -22,14 +22,14 @@ func (sh studentsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	pathSegments := strings.Split(r.URL.Path, "/")
 	switch len(pathSegments) {
 	case 2:
-		sh.getAll(w, r)
+		sh.getAll(w)
 	case 3:
 		id, err := strconv.Atoi(pathSegments[2])
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		sh.getOne(w, r, id)
+		sh.getOne(w, id)
 	case 4:
 		id, err := strconv.Atoi(pathSegments[2])
 		if err != nil {
@@ -42,7 +42,7 @@ func (sh studentsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (sh studentsHandler) getAll(w http.ResponseWriter, r *http.Request) {
+func (sh studentsHandler) getAll(w http.ResponseWriter) {
 	studentsMutex.Lock()
 	defer studentsMutex.Unlock()
 
@@ -56,7 +56,7 @@ func (sh studentsHandler) getAll(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(data)
 }
 
-func (sh studentsHandler) getOne(w http.ResponseWriter, r *http.Request, id int) {
+func (sh studentsHandler) getOne(w http.ResponseWriter, id int) {
 	studentsMutex.Lock()
 	defer studentsMutex.Unlock()
 

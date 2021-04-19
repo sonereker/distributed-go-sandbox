@@ -11,6 +11,17 @@ var log *stlog.Logger
 
 type fileLog string
 
+func RegisterHandlers() {
+	http.HandleFunc("/log", func(w http.ResponseWriter, r *http.Request) {
+		msg, err := ioutil.ReadAll(r.Body)
+		if err != nil || len(msg) == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		write(string(msg))
+	})
+}
+
 func (fl fileLog) Write(data []byte) (int, error) {
 	f, err := os.OpenFile(string(fl), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
@@ -22,17 +33,6 @@ func (fl fileLog) Write(data []byte) (int, error) {
 
 func Run(destination string) {
 	log = stlog.New(fileLog(destination), "", stlog.LstdFlags)
-}
-
-func RegisterHandlers() {
-	http.HandleFunc("/log", func(w http.ResponseWriter, r *http.Request) {
-		msg, err := ioutil.ReadAll(r.Body)
-		if err != nil || len(msg) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		write(string(msg))
-	})
 }
 
 func write(message string) {
