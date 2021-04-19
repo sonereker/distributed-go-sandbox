@@ -32,7 +32,7 @@ func main() {
 		stlog.Fatal(err)
 	}
 
-	if logProvider, err := registry.GetProvider(registry.TeacherPortal); err == nil {
+	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
 		fmt.Printf("Log service found at %v\n", logProvider)
 		log.SetClientLogger(logProvider, r.ServiceName)
 	}
